@@ -17,20 +17,29 @@ class TextPreprocessor:
         """Remove HTML tags from text"""
         try:
             return BeautifulSoup(text, "html.parser").get_text()
-        return text
+        except Exception as e:
+            print(f"Error removing HTML: {e}")
+        finally:
+            return text
     
     def normalize_whitespace(self, text):
         """Normalize whitespace in text"""
-        if isinstance(text, str):
+        try:
             # Replace multiple whitespace characters with a single space
             return re.sub(r'\s+', ' ', text).strip()
-        return text
+        except Exception as e:
+            print(f"Error normalizing whitespace: {e}")
+        finally:
+            return text
     
     def normalize_unicode(self, text):
         """Normalize Unicode characters"""
-        if isinstance(text, str):
+        try:
             return unicodedata.normalize('NFKC', text)
-        return text
+        except Exception as e:
+            print(f"Error normalizing Unicode: {e}")
+        finally:
+            return text
     
     def preprocess_text(self, text):
         """Apply all preprocessing steps to text"""
