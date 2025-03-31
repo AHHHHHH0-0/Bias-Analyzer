@@ -15,3 +15,9 @@ def collect_dataset(topics, sources, days_back=7):
     Returns:
         pandas.DataFrame: Combined dataset
     """
+
+def main():
+    
+
+if __name__ == "__main__":
+    main()
