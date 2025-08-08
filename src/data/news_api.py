@@ -1,7 +1,13 @@
 import requests
-from datetime import datetime, timedelta
 import pandas as pd
-from src.config import NEWS_API_KEY, BASE_URL, DAYS_BACK, LANGUAGE, PAGE_SIZE
+from datetime import datetime, timedelta
+import os
+import sys
+
+src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(src_dir)
+
+from config import NEWS_API_KEY, BASE_URL, DAYS_BACK, LANGUAGE, PAGE_SIZE
 
 
 class NewsAPIClient:
