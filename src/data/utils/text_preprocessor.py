@@ -19,17 +19,14 @@ class TextPreprocessor:
             return BeautifulSoup(text, "html.parser").get_text()
         except Exception as e:
             print(f"Error removing HTML: {e}")
-        finally:
             return text
     
     def normalize_whitespace(self, text):
         """Normalize whitespace in text"""
         try:
-            # Replace multiple whitespace characters with a single space
             return re.sub(r'\s+', ' ', text).strip()
         except Exception as e:
             print(f"Error normalizing whitespace: {e}")
-        finally:
             return text
     
     def normalize_unicode(self, text):
@@ -38,7 +35,6 @@ class TextPreprocessor:
             return unicodedata.normalize('NFKC', text)
         except Exception as e:
             print(f"Error normalizing Unicode: {e}")
-        finally:
             return text
     
     def preprocess_text(self, text):
