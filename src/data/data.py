@@ -4,6 +4,7 @@ import os
 from utils.news_api import NewsAPIClient
 from utils.text_preprocessor import TextPreprocessor
 
+
 def collect_dataset(topics, sources, days_back):
     """
     Collect a diverse dataset of news articles
@@ -51,6 +52,7 @@ def collect_dataset(topics, sources, days_back):
         print("No articles collected")
         return pd.DataFrame()
 
+
 def main(topics, sources, days_back):
     # Collect dataset
     raw_df = collect_dataset(topics, sources, days_back)
@@ -67,6 +69,7 @@ def main(topics, sources, days_back):
         # Save processed dataset
         processed_df.to_csv("src/data/processed/processed_articles.csv", index=False)
         print(f"Saved {len(processed_df)} processed articles")
+
 
 if __name__ == "__main__":
 

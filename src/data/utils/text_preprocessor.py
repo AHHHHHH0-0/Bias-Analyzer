@@ -13,6 +13,7 @@ class TextPreprocessor:
     def __init__(self):
         pass
         
+
     def clean_html(self, text):
         """Remove HTML tags from text"""
         try:
@@ -21,6 +22,7 @@ class TextPreprocessor:
             print(f"Error removing HTML: {e}")
             return text
     
+
     def normalize_whitespace(self, text):
         """Normalize whitespace in text"""
         try:
@@ -29,6 +31,7 @@ class TextPreprocessor:
             print(f"Error normalizing whitespace: {e}")
             return text
     
+
     def normalize_unicode(self, text):
         """Normalize Unicode characters"""
         try:
@@ -37,6 +40,7 @@ class TextPreprocessor:
             print(f"Error normalizing Unicode: {e}")
             return text
     
+
     def preprocess_text(self, text):
         """Apply all preprocessing steps to text"""
         if pd.isna(text) or text is None:
@@ -47,6 +51,7 @@ class TextPreprocessor:
         text = self.normalize_whitespace(text)
         return text
     
+
     def preprocess_dataframe(self, df, text_columns=['title', 'description', 'content']):
         """
         Preprocess specified text columns in a DataFrame

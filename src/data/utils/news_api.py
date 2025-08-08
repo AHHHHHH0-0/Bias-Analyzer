@@ -6,10 +6,12 @@ from .config import NEWS_API_KEY, BASE_URL, DAYS_BACK, LANGUAGE, PAGE_SIZE
 
 
 class NewsAPIClient:
+    
     def __init__(self, api_key=NEWS_API_KEY, base_url=BASE_URL):
         self.api_key = api_key
         self.base_url = BASE_URL
         
+
     def get_articles_by_keyword(self, keyword, days_back=DAYS_BACK, language=LANGUAGE, page_size=PAGE_SIZE):
         """
         Fetch articles through the API based on keyword search
@@ -60,6 +62,7 @@ class NewsAPIClient:
             print(f"Error: {response.status_code}")
             print(response.text)
             return pd.DataFrame()
+
 
     def get_articles_by_source(self, sources, days_back=DAYS_BACK, page_size=PAGE_SIZE):
         """
