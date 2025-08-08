@@ -1,13 +1,8 @@
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
-import os
-import sys
 
-src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(src_dir)
-
-from config import NEWS_API_KEY, BASE_URL, DAYS_BACK, LANGUAGE, PAGE_SIZE
+from .config import NEWS_API_KEY, BASE_URL, DAYS_BACK, LANGUAGE, PAGE_SIZE
 
 
 class NewsAPIClient:
@@ -65,7 +60,6 @@ class NewsAPIClient:
             print(f"Error: {response.status_code}")
             print(response.text)
             return pd.DataFrame()
-    
 
     def get_articles_by_source(self, sources, days_back=DAYS_BACK, page_size=PAGE_SIZE):
         """
@@ -120,18 +114,3 @@ class NewsAPIClient:
             print(response.text)
             return pd.DataFrame()
     
-
-    def save_articles_to_csv(self, df, filename):
-        """
-        Save articles DataFrame to CSV file
-        
-        Args:
-            df (pandas.DataFrame): DataFrame containing articles
-            filename (str): Output filename
-        """
-        if not df.empty:
-            df.to_csv(f"src/data/raw/{filename}", index=False)
-            print(f"Saved {len(df)} articles to {filename}")
-        else:
-            print("No articles to save")
-            

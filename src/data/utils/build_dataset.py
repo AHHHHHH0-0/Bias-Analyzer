@@ -1,7 +1,7 @@
 import pandas as pd
 import os
-from src.data.news_api import NewsAPIClient
-from src.data.text_preprocessor import TextPreprocessor
+from data.utils.news_api import NewsAPIClient
+from data.utils.text_preprocessor import TextPreprocessor
 
 def collect_dataset(topics, sources, days_back=7):
     """

@@ -1,9 +1,9 @@
 # src/data/preprocessor.py
 import re
-import pandas as pd
-
-from bs4 import BeautifulSoup
 import unicodedata
+import pandas as pd
+from bs4 import BeautifulSoup
+
 
 class TextPreprocessor:
     """
