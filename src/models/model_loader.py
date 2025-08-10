@@ -11,32 +11,38 @@ def _select_device() -> torch.device:
     return torch.device("cpu")
 
 
-def load_pretrained_model(model_name, cache_dir):
+def load_pretrained_model(model_name, save_path):
     """
-    Load a tokenizer and sequence classification model for the given model name.
+    Load a tokenizer and sequence classification model and save to custom folder.
     """
-    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir, use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, cache_dir=cache_dir)
-
-    model.eval()
-
+    print(f"Loading {model_name}...")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    
+    # Save to custom folder name
+    tokenizer.save_pretrained(save_path)
+    model.save_pretrained(save_path)
+    print(f"\nSaved to {save_path}\n")
+    
     return tokenizer, model
 
 
-if __name__ == "__main__":
-    # Configure which models to load. Edit this list as needed.
-    model_names = [
-        "cardiffnlp/twitter-roberta-base-sentiment-latest",
-        "distilbert-base-uncased",
-    ]
+def main():
+    # Configure which models to load with clean folder names
+    models_config = {
+        "cardiffnlp/twitter-roberta-base-sentiment-latest": "roberta",
+        "distilbert-base-uncased": "distillbert"
+    }
 
     device = _select_device()
     torch.set_grad_enabled(False)
 
-    loaded = {}
-    for name in model_names:
-        # Use the checkpoint's own classification head if available (e.g., CardiffNLP sentiment)
-        tokenizer, model = load_pretrained_model(name, cache_dir="src/models/base")
-        loaded[name] = (tokenizer, model)
+    for model_id, folder_name in models_config.items():
+        save_path = f"src/models/base/{folder_name}"
+        load_pretrained_model(model_id, save_path)
 
-    print(f"Loaded {len(loaded)} model(s) on device: {device}")
+    print(f"Loaded {len(models_config)} model(s) on device: {device}")
+
+
+if __name__ == "__main__":
+    main()
