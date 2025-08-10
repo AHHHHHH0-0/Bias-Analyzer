@@ -3,6 +3,7 @@ import os
 
 from utils.news_api import NewsAPIClient
 from utils.text_preprocessor import TextPreprocessor
+from utils.labeled_datasets import save_labeled_datasets
 
 
 def collect_dataset(topics, sources, days_back):
@@ -53,7 +54,26 @@ def collect_dataset(topics, sources, days_back):
         return pd.DataFrame()
 
 
-def main(topics, sources, days_back):
+def main():
+    # Define topics and sources
+    topics = [
+        "climate change",
+        "artificial intelligence",
+        "healthcare",
+        "economy",
+        "politics"
+    ]
+    sources = [
+        "bbc-news",
+        "cnn",
+        "fox-news",
+        "the-washington-post",
+        "reuters",
+        "the-wall-street-journal"
+    ]
+
+    days_back = 7
+
     # Collect dataset
     raw_df = collect_dataset(topics, sources, days_back)
     
@@ -72,23 +92,5 @@ def main(topics, sources, days_back):
 
 
 if __name__ == "__main__":
-
-    # Define topics and sources
-    topics = [
-        "climate change",
-        "artificial intelligence",
-        "healthcare",
-        "economy",
-        "politics"
-    ]
-    sources = [
-        "bbc-news",
-        "cnn",
-        "fox-news",
-        "the-washington-post",
-        "reuters",
-        "the-wall-street-journal"
-    ]
-
-    main(topics, sources, days_back=7)
-    
+    main()
+    save_labeled_datasets()
