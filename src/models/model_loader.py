@@ -31,7 +31,7 @@ def main():
     # Configure which models to load with clean folder names
     models_config = {
         "cardiffnlp/twitter-roberta-base-sentiment-latest": "roberta",
-        "distilbert-base-uncased": "distillbert"
+        "distilbert-base-uncased": "distilbert"
     }
 
     device = _select_device()
