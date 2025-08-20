@@ -5,3 +5,12 @@ beautifulsoup4
 transformers
 torch
 scikit-learn
+datasets
+matplotlib
+seaborn
+plotly
+numpy
+scipy
+psutil
+python-dotenv
+kaleido
