@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import DistilBertModel
+from transformers.modeling_outputs import SequenceClassifierOutput
 
 
 class DistilbertBiasClassifier(nn.Module):
@@ -11,8 +12,8 @@ class DistilbertBiasClassifier(nn.Module):
     def __init__(self, layers, train_mode, num_classes=3):
         super(DistilbertBiasClassifier, self).__init__()
         
-        # Load base DistilBERT model
-        self.distilbert = DistilBertModel.from_pretrained("distilbert-base-uncased")
+        # Load base DistilBERT model from preloaded encoders
+        self.distilbert = DistilBertModel.from_pretrained("src/models/encoders/distilbert")
 
         # Define configs
         self.hidden_size = self.distilbert.config.hidden_size
@@ -84,4 +85,9 @@ class DistilbertBiasClassifier(nn.Module):
             loss_fct = nn.CrossEntropyLoss()
             loss = loss_fct(logits, labels)
         
-        return logits, loss
+        return SequenceClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=None,
+            attentions=None
+        )

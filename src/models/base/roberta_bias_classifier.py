@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import RobertaModel
+from transformers.modeling_outputs import SequenceClassifierOutput
 
 
 class RobertaBiasClassifier(nn.Module):
@@ -11,8 +12,8 @@ class RobertaBiasClassifier(nn.Module):
     def __init__(self, layers, train_mode, num_classes=3):
         super(RobertaBiasClassifier, self).__init__()
         
-        # Load base RoBERTa model
-        self.roberta = RobertaModel.from_pretrained("roberta-base")
+        # Load base RoBERTa model from preloaded encoders
+        self.roberta = RobertaModel.from_pretrained("src/models/encoders/roberta")
 
         # Define configs
         self.hidden_size = self.roberta.config.hidden_size
@@ -84,4 +85,9 @@ class RobertaBiasClassifier(nn.Module):
             loss_fct = nn.CrossEntropyLoss()
             loss = loss_fct(logits, labels)
         
-        return logits, loss
+        return SequenceClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=None,
+            attentions=None
+        )
