@@ -14,3 +14,4 @@ scipy
 psutil
 python-dotenv
 kaleido
+accelerate>=0.26.0
