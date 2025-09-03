@@ -5,3 +5,4 @@ __pycache__/
 .env
 
 src/models/encoders/
+src/models/trained/
