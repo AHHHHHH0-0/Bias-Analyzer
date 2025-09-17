@@ -9,7 +9,6 @@ TASK_CONFIG = {
     "bias": {
         "labels": ["left", "center", "right"],
         "train_csv": "src/data/labeled/train.csv", 
-        "test_csv": "src/data/labeled/test.csv",
         "text_column": "text",
         "label_column": "label"
     }
