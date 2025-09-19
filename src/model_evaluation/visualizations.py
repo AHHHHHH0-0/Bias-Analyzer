@@ -192,11 +192,13 @@ def create_size_and_speed_comparison(results_df: pd.DataFrame, output_dir: str) 
         )
         
         # Add value labels on bars
+        max_params = max(params_millions)
+        offset = max_params * 0.01  # 2% of max value for consistent positioning
         for bar, value in zip(bars1, params_millions):
             height = bar.get_height()
             ax1.text(
                 bar.get_x() + bar.get_width()/2., 
-                height + 0.5,
+                height + offset,
                 f'{value:.1f}M', 
                 ha='center', 
                 va='bottom', 
@@ -227,11 +229,13 @@ def create_size_and_speed_comparison(results_df: pd.DataFrame, output_dir: str) 
         )
         
         # Add value labels on bars
+        max_time = max(time_ms)
+        offset = max_time * 0.01  # 2% of max value for consistent positioning
         for bar, value in zip(bars2, time_ms):
             height = bar.get_height()
             ax2.text(
                 bar.get_x() + bar.get_width()/2., 
-                height + 0.1,
+                height + offset,
                 f'{value:.2f}ms', 
                 ha='center', 
                 va='bottom', 
