@@ -246,24 +246,21 @@ class ModelEvaluationRunner:
         # Create DataFrame
         results_df = pd.DataFrame.from_dict(results, orient='index')
         
-        # Save results
-        results_df.to_csv(self.metrics_dir / "trained_models_results.csv")
-        
-        print(f"\nEvaluation complete! Results saved to {self.metrics_dir}")
+        print(f"\nEvaluation complete! Results saved to {self.metrics_dir}\n")
         return results_df
     
     def analyze_model_comparisons(self, results_df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
         """
-        Create structured comparisons across different dimensions.
+        Create two structured CSV files for model comparison analysis.
         
         Args:
             results_df: Results DataFrame with model_id as index
             
         Returns:
-            Dictionary of comparison DataFrames
+            Dictionary containing the two comparison DataFrames
         """
-        # Initialize comparisons dictionary
-        comparisons = {}
+        # Define the columns we want in the output
+        target_columns = ['accuracy', 'f1_macro', 'precision_macro', 'recall_macro', 'model_size_mb', 'total_parameters', 'inference_time_per_sample']
         
         # Parse model IDs to extract components
         model_data = []
@@ -281,41 +278,46 @@ class ModelEvaluationRunner:
         model_info_df = pd.DataFrame(model_data)
         results_with_info = results_df.join(model_info_df.set_index('model_id'))
         
-        print(f"1. Architecture Comparison (RoBERTa vs DistilBERT)")
-        if 'architecture' in results_with_info.columns:
-            arch_comparison = results_with_info.groupby('architecture')[['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']].agg(['mean', 'std', 'max', 'min'])
-            comparisons['architecture'] = arch_comparison
-            arch_comparison.to_csv(self.metrics_dir / "architecture_comparison.csv")
+        # 1. Individual Models CSV (7 columns × 12 rows)
+        print("1. Creating individual models CSV...")
+        individual_df = results_with_info[target_columns].copy()
+        individual_df.to_csv(self.metrics_dir / "individual_models.csv")
         
-        print(f"2. Layer Configuration Comparison (1layer vs 2layer)")
-        if 'layer_config' in results_with_info.columns:
-            layer_comparison = results_with_info.groupby('layer_config')[['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']].agg(['mean', 'std', 'max', 'min'])
-            comparisons['layer_config'] = layer_comparison
-            layer_comparison.to_csv(self.metrics_dir / "layer_config_comparison.csv")
+        # 2. Aggregated Metrics CSV (7 columns × 10 rows with dividers)
+        print("2. Creating aggregated metrics CSV...")
+        aggregated_data = []
         
-        print(f"3. Training Mode Comparison (feat_extr vs ft_part vs ft_full)...")
-        if 'training_mode' in results_with_info.columns:
-            mode_comparison = results_with_info.groupby('training_mode')[['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']].agg(['mean', 'std', 'max', 'min'])
-            comparisons['training_mode'] = mode_comparison
-            mode_comparison.to_csv(self.metrics_dir / "training_mode_comparison.csv")
+        # Model averages (roberta, distilbert)
+        for arch in ['roberta', 'distilbert']:
+            arch_data = results_with_info[results_with_info['architecture'] == arch][target_columns].mean()
+            aggregated_data.append([arch] + arch_data.tolist())
         
-        print(f"4. Combined Analysis (Architecture + Layer + Mode)...")
-        if all(col in results_with_info.columns for col in ['architecture', 'layer_config', 'training_mode']):
-            combined_comparison = results_with_info.groupby(['architecture', 'layer_config', 'training_mode'])[['accuracy', 'f1_macro']].mean()
-            comparisons['combined'] = combined_comparison
-            combined_comparison.to_csv(self.metrics_dir / "combined_comparison.csv")
+        # Add blank divider row
+        aggregated_data.append([''] + [None] * len(target_columns))
         
-        print(f"5. Efficiency Analysis (Performance vs Model Size)...")
-        if 'total_parameters' in results_with_info.columns:
-            efficiency_df = results_with_info[['accuracy', 'f1_macro', 'total_parameters', 'inference_time_per_sample']].copy()
-            efficiency_df['efficiency_score'] = efficiency_df['accuracy'] / (efficiency_df['total_parameters'] / 1e6)
-            efficiency_df = efficiency_df.sort_values('efficiency_score', ascending=False)
-            comparisons['efficiency'] = efficiency_df
-            efficiency_df.to_csv(self.metrics_dir / "efficiency_analysis.csv")
+        # Architecture averages (1layer, 2layer)
+        for layer in ['1layer', '2layer']:
+            layer_data = results_with_info[results_with_info['layer_config'] == layer][target_columns].mean()
+            aggregated_data.append([layer] + layer_data.tolist())
         
-        print(f"\n✓ Completed!\n")
+        # Add blank divider row
+        aggregated_data.append([''] + [None] * len(target_columns))
+        
+        # Training mode averages (feat_extr, ft_part, ft_full)
+        for mode in ['feat_extr', 'ft_part', 'ft_full']:
+            mode_data = results_with_info[results_with_info['training_mode'] == mode][target_columns].mean()
+            aggregated_data.append([mode] + mode_data.tolist())
+        
+        # Create aggregated DataFrame
+        aggregated_df = pd.DataFrame(aggregated_data, columns=['category'] + target_columns)
+        aggregated_df.to_csv(self.metrics_dir / "aggregated_metrics.csv", index=False)
+        
+        print("\n✓ Created 2 CSV files!\n")
 
-        return comparisons
+        return {
+            'individual': individual_df,
+            'aggregated': aggregated_df
+        }
     
     def run_comprehensive_evaluation(self) -> Dict[str, Any]:
         """
@@ -333,13 +335,13 @@ class ModelEvaluationRunner:
         results_df = self.evaluate_all_trained_models()
         
         # Phase 2: Generate structured comparisons
-        print("\n" + "="*60)
+        print("="*60)
         print("GENERATING STRUCTURED COMPARISONS")
         print("="*60)
         comparisons = self.analyze_model_comparisons(results_df)
 
         # Phase 3: Generate visualizations
-        print("\n" + "="*60)
+        print("="*60)
         print("GENERATING VISUALIZATIONS")
         print("="*60)
         create_all_visualizations(results_df, self.confusion_matrices, str(self.visualizations_dir))

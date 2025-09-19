@@ -46,7 +46,7 @@ def create_all_visualizations(
     print("Creating size and inference speed comparison chart...")
     create_size_and_speed_comparison(results_df, str(output_path))
     
-    print(f"✓ All visualizations saved to: {output_dir}\n")
+    print(f"\n✓ All visualizations saved to: {output_dir}\n")
 
 
 def create_confusion_matrices(confusion_matrices: Dict, output_dir: str) -> None:
