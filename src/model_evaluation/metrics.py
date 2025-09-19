@@ -5,14 +5,13 @@ Provides consistent metrics across sentiment and bias classification tasks.
 
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Optional, Union
 from sklearn.metrics import (
     accuracy_score, precision_recall_fscore_support, 
     confusion_matrix, roc_auc_score, matthews_corrcoef
 )
 from sklearn.preprocessing import LabelBinarizer
 import torch
-import torch.nn.functional as F
 
 
 class ModelMetrics:

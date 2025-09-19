@@ -45,7 +45,7 @@ def main():
         print(f"Results directory: {runner.output_dir}")
         
         print("\nGenerated files:")
-        print(f"  📊 Main results: {runner.metrics_dir}/trained_models_results.csv")
+        print(f"  📊 Metrics: {runner.metrics_dir}/")
         print(f"  🎨 Visualizations: {runner.visualizations_dir}/")
         
         # Display best models

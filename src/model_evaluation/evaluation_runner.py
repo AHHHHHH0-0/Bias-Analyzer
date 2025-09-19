@@ -4,11 +4,10 @@ Orchestrates the entire evaluation pipeline for academic analysis.
 """
 
 import os
-import json
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Optional, Any
 import time
 from datetime import datetime
 import torch
@@ -150,7 +149,6 @@ class ModelEvaluationRunner:
         
         # Create label mapping
         label2id = {label: i for i, label in enumerate(config["labels"])}
-        id2label = {i: label for label, i in label2id.items()}
         
         # Create dataset
         test_dataset = TextClassificationDataset(
