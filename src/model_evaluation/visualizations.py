@@ -61,16 +61,6 @@ def create_confusion_matrices(confusion_matrices: Dict, output_dir: str) -> None
     print(f"Creating {len(confusion_matrices)} confusion matrices...")
     
     for key, cm in confusion_matrices.items():
-        # Extract model identifier from key 
-        # Key format: "roberta_1layer_ft_part_bias_trained_model" -> "roberta_1layer_ft_part"
-        parts = key.split('_')
-        if len(parts) >= 3:
-            # Take first 3 parts as the model identifier (arch_layer_mode)
-            model_id = '_'.join(parts[:3])
-        else:
-            # Fallback to the key itself if format is unexpected
-            model_id = key
-        
         # Create figure
         plt.figure(figsize=(8, 6))
         
@@ -83,13 +73,13 @@ def create_confusion_matrices(confusion_matrices: Dict, output_dir: str) -> None
             cbar_kws={'shrink': 0.8}
         )
         
-        plt.title(f'Confusion Matrix: {model_id}', fontsize=14, fontweight='bold')
+        plt.title(f'Confusion Matrix: {key}', fontsize=14, fontweight='bold')
         plt.xlabel('Predicted Label', fontsize=12)
         plt.ylabel('True Label', fontsize=12)
         plt.tight_layout()
         
         # Save the figure with the full model identifier to avoid collisions
-        filename = f"{model_id}.png"
+        filename = f"{key}.png"
         plt.savefig(os.path.join(output_dir, filename), dpi=300, bbox_inches='tight')
         plt.close()
 
