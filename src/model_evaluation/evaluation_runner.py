@@ -16,7 +16,7 @@ from transformers import AutoTokenizer, DataCollatorWithPadding
 from torch.utils.data import DataLoader
 
 from .metrics import get_task_metrics_calculator, calculate_model_size_metrics, calculate_inference_metrics
-from .visualizations import ModelVisualizationSuite, create_all_visualizations
+from .visualizations import create_all_visualizations
 from ..model_training.train import TextClassificationDataset
 from ..model_training.config import TASK_CONFIG, MODELS_CONFIG, DEFAULT_OUTPUT_ROOT
 
@@ -43,8 +43,7 @@ class ModelEvaluationRunner:
         for dir_path in [self.metrics_dir, self.visualizations_dir]:
             dir_path.mkdir(parents=True, exist_ok=True)
         
-        # Initialize visualization suite
-        self.viz_suite = ModelVisualizationSuite(str(self.visualizations_dir))
+        # Initialize confusion matrices storage
         self.confusion_matrices = {}
         
         # Model discovery
@@ -55,9 +54,9 @@ class ModelEvaluationRunner:
 
         # Print setup
         print()
-        print(f"Using device: {self.device}")
-        print(f"Discovered {len(self.available_models)} trained models")
-        print(f"Output directory: {self.output_dir}")
+        print(f"✓ Using device: {self.device}")
+        print(f"✓ Discovered {len(self.available_models)} trained models")
+        print(f"✓ Output directory: {self.output_dir}")
         print()
 
     def _select_device(self) -> str:
@@ -147,8 +146,7 @@ class ModelEvaluationRunner:
         model.eval()
         
         # Load evaluation data (eval.csv for post-training evaluation)
-        eval_csv_path = "src/data/labeled/eval.csv"
-        df_test = pd.read_csv(eval_csv_path)
+        df_test = pd.read_csv("src/data/labeled/eval.csv")
         
         # Create label mapping
         label2id = {label: i for i, label in enumerate(config["labels"])}
@@ -211,22 +209,13 @@ class ModelEvaluationRunner:
         # Confusion matrix
         confusion_matrix = metrics_calc.get_confusion_matrix_df(y_true, y_pred)
         
-        # Classification report
-        classification_report = metrics_calc.get_classification_report_df(y_true, y_pred)
-        
         # Store confusion matrix for visualization
-        model_name = Path(model_path).name
-        cm_key = f"{model_name}_{task}_{phase}"
+        # Use full model_id instead of just the directory name to prevent key collisions
+        model_parts = model_path.split('/')
+        cm_key = f"{model_parts[-3]}_{model_parts[-2]}_{model_parts[-1]}"
         self.confusion_matrices[cm_key] = confusion_matrix
         
-        return {
-            'metrics': metrics,
-            'confusion_matrix': confusion_matrix,
-            'classification_report': classification_report,
-            'predictions': y_pred,
-            'probabilities': y_proba,
-            'true_labels': y_true
-        }
+        return metrics
     
     def evaluate_all_trained_models(self) -> pd.DataFrame:
         """
@@ -235,9 +224,9 @@ class ModelEvaluationRunner:
         Returns:
             DataFrame with evaluation results
         """
-        
+        # Initialize results dictionary
         results = {}
-        task = "bias"  # Only bias task now
+        task = "bias"  # Only bias task for now
         
         for model_id, model_path in self.available_models.items():
             print(f"\nEvaluating {model_id}...")
@@ -246,7 +235,7 @@ class ModelEvaluationRunner:
                 result = self._evaluate_model_on_task(
                     model_path, task, "trained_model"
                 )
-                results[model_id] = result['metrics']
+                results[model_id] = result
                 
                 print(f"✓ Completed: {model_id}")
                 
@@ -273,10 +262,7 @@ class ModelEvaluationRunner:
         Returns:
             Dictionary of comparison DataFrames
         """
-        print("="*60)
-        print("GENERATING STRUCTURED COMPARISONS")
-        print("="*60)
-        
+        # Initialize comparisons dictionary
         comparisons = {}
         
         # Parse model IDs to extract components
@@ -295,31 +281,31 @@ class ModelEvaluationRunner:
         model_info_df = pd.DataFrame(model_data)
         results_with_info = results_df.join(model_info_df.set_index('model_id'))
         
-        # 1. Architecture Comparison (RoBERTa vs DistilBERT)
+        print(f"1. Architecture Comparison (RoBERTa vs DistilBERT)")
         if 'architecture' in results_with_info.columns:
             arch_comparison = results_with_info.groupby('architecture')[['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']].agg(['mean', 'std', 'max', 'min'])
             comparisons['architecture'] = arch_comparison
             arch_comparison.to_csv(self.metrics_dir / "architecture_comparison.csv")
         
-        # 2. Layer Configuration Comparison (1layer vs 2layer)
+        print(f"2. Layer Configuration Comparison (1layer vs 2layer)")
         if 'layer_config' in results_with_info.columns:
             layer_comparison = results_with_info.groupby('layer_config')[['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']].agg(['mean', 'std', 'max', 'min'])
             comparisons['layer_config'] = layer_comparison
             layer_comparison.to_csv(self.metrics_dir / "layer_config_comparison.csv")
         
-        # 3. Training Mode Comparison (feat_extr vs ft_part vs ft_full)
+        print(f"3. Training Mode Comparison (feat_extr vs ft_part vs ft_full)...")
         if 'training_mode' in results_with_info.columns:
             mode_comparison = results_with_info.groupby('training_mode')[['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']].agg(['mean', 'std', 'max', 'min'])
             comparisons['training_mode'] = mode_comparison
             mode_comparison.to_csv(self.metrics_dir / "training_mode_comparison.csv")
         
-        # 4. Combined Analysis (Architecture + Layer + Mode)
+        print(f"4. Combined Analysis (Architecture + Layer + Mode)...")
         if all(col in results_with_info.columns for col in ['architecture', 'layer_config', 'training_mode']):
             combined_comparison = results_with_info.groupby(['architecture', 'layer_config', 'training_mode'])[['accuracy', 'f1_macro']].mean()
             comparisons['combined'] = combined_comparison
             combined_comparison.to_csv(self.metrics_dir / "combined_comparison.csv")
         
-        # 5. Efficiency Analysis (Performance vs Model Size)
+        print(f"5. Efficiency Analysis (Performance vs Model Size)...")
         if 'total_parameters' in results_with_info.columns:
             efficiency_df = results_with_info[['accuracy', 'f1_macro', 'total_parameters', 'inference_time_per_sample']].copy()
             efficiency_df['efficiency_score'] = efficiency_df['accuracy'] / (efficiency_df['total_parameters'] / 1e6)
@@ -327,142 +313,9 @@ class ModelEvaluationRunner:
             comparisons['efficiency'] = efficiency_df
             efficiency_df.to_csv(self.metrics_dir / "efficiency_analysis.csv")
         
+        print(f"\n✓ Completed!\n")
+
         return comparisons
-    
-    def generate_comprehensive_report(
-        self, 
-        results_df: pd.DataFrame, 
-        comparisons: Dict[str, pd.DataFrame]
-    ) -> str:
-        """
-        Generate comprehensive text report of findings.
-        
-        Args:
-            results_df: Main results DataFrame
-            comparisons: Dictionary of comparison analyses
-            
-        Returns:
-            Report string
-        """
-        report = []
-        report.append("="*80)
-        report.append("BIAS CLASSIFICATION: 12-MODEL COMPARISON REPORT")
-        report.append("="*80)
-        report.append(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        report.append(f"Evaluated {len(results_df)} models on bias classification task")
-        report.append("")
-        
-        # Executive Summary
-        report.append("EXECUTIVE SUMMARY")
-        report.append("-" * 40)
-        
-        if not results_df.empty:
-            # Best performing models
-            best_accuracy = results_df['accuracy'].max()
-            best_f1 = results_df['f1_macro'].max()
-            best_acc_model = results_df['accuracy'].idxmax()
-            best_f1_model = results_df['f1_macro'].idxmax()
-            
-            report.append(f"Best Accuracy: {best_acc_model} ({best_accuracy:.3f})")
-            report.append(f"Best F1-Macro: {best_f1_model} ({best_f1:.3f})")
-            report.append(f"Average Accuracy: {results_df['accuracy'].mean():.3f} ± {results_df['accuracy'].std():.3f}")
-            report.append(f"Average F1-Macro: {results_df['f1_macro'].mean():.3f} ± {results_df['f1_macro'].std():.3f}")
-        
-        report.append("")
-        
-        # Detailed Results
-        report.append("DETAILED RESULTS")
-        report.append("-" * 40)
-        
-        # Top performers by metric
-        key_metrics = ['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']
-        available_metrics = [m for m in key_metrics if m in results_df.columns]
-        
-        for metric in available_metrics:
-            report.append(f"\n{metric.replace('_', ' ').title()} (Top 5):")
-            sorted_results = results_df[metric].sort_values(ascending=False).head(5)
-            for idx, value in sorted_results.items():
-                report.append(f"  {idx}: {value:.3f}")
-        
-        report.append("")
-        
-        # Structured Analysis
-        report.append("STRUCTURED ANALYSIS")
-        report.append("-" * 40)
-        
-        # Architecture comparison
-        if 'architecture' in comparisons:
-            arch_comp = comparisons['architecture']
-            report.append("\nArchitecture Comparison (Mean Accuracy):")
-            for arch in arch_comp.index:
-                mean_acc = arch_comp.loc[arch, ('accuracy', 'mean')]
-                report.append(f"  {arch.upper()}: {mean_acc:.3f}")
-        
-        # Training mode comparison
-        if 'training_mode' in comparisons:
-            mode_comp = comparisons['training_mode']
-            report.append("\nTraining Mode Comparison (Mean F1-Macro):")
-            for mode in mode_comp.index:
-                mean_f1 = mode_comp.loc[mode, ('f1_macro', 'mean')]
-                mode_desc = {'feat_extr': 'Feature Extraction', 'ft_part': 'Partial Fine-tuning', 'ft_full': 'Full Fine-tuning'}
-                report.append(f"  {mode_desc.get(mode, mode)}: {mean_f1:.3f}")
-        
-        # Layer configuration comparison
-        if 'layer_config' in comparisons:
-            layer_comp = comparisons['layer_config']
-            report.append("\nLayer Configuration Comparison (Mean F1-Macro):")
-            for layer in layer_comp.index:
-                mean_f1 = layer_comp.loc[layer, ('f1_macro', 'mean')]
-                layer_desc = {'1layer': '1-Layer (Linear)', '2layer': '2-Layer (MLP)'}
-                report.append(f"  {layer_desc.get(layer, layer)}: {mean_f1:.3f}")
-        
-        report.append("")
-        
-        # Model Efficiency
-        if 'efficiency' in comparisons:
-            efficiency_df = comparisons['efficiency']
-            report.append("EFFICIENCY ANALYSIS")
-            report.append("-" * 40)
-            
-            report.append("Top 3 Most Efficient Models (Accuracy/Parameters):")
-            for i, (model_id, row) in enumerate(efficiency_df.head(3).iterrows()):
-                report.append(f"  {i+1}. {model_id}: {row['efficiency_score']:.3f}")
-        
-        report.append("")
-        
-        # Recommendations
-        report.append("RECOMMENDATIONS")
-        report.append("-" * 40)
-        
-        if not results_df.empty:
-            # Best overall model
-            best_overall = results_df['f1_macro'].idxmax()
-            report.append(f"Best Overall Model: {best_overall}")
-            
-            # Architecture recommendations
-            if 'architecture' in comparisons:
-                arch_comp = comparisons['architecture']
-                best_arch = arch_comp[('accuracy', 'mean')].idxmax()
-                report.append(f"Best Architecture: {best_arch.upper()}")
-            
-            # Training mode recommendations
-            if 'training_mode' in comparisons:
-                mode_comp = comparisons['training_mode']
-                best_mode = mode_comp[('f1_macro', 'mean')].idxmax()
-                mode_desc = {'feat_extr': 'Feature Extraction', 'ft_part': 'Partial Fine-tuning', 'ft_full': 'Full Fine-tuning'}
-                report.append(f"Best Training Mode: {mode_desc.get(best_mode, best_mode)}")
-            
-            # General findings
-            report.append("\nKey Findings:")
-            report.append("- Systematic evaluation across 12 model configurations")
-            report.append("- Different architectures show varying performance patterns")
-            report.append("- Training mode significantly impacts bias classification performance")
-            report.append("- Consider computational requirements when selecting deployment model")
-        
-        report.append("")
-        report.append("="*80)
-        
-        return "\n".join(report)
     
     def run_comprehensive_evaluation(self) -> Dict[str, Any]:
         """
@@ -489,25 +342,13 @@ class ModelEvaluationRunner:
         print("\n" + "="*60)
         print("GENERATING VISUALIZATIONS")
         print("="*60)
-        
-        create_all_visualizations(
-            pd.DataFrame(),  # No before results for this evaluation
-            results_df, 
-            self.confusion_matrices,
-            str(self.visualizations_dir)
-        )
-        
-        # Phase 4: Generate comprehensive report
-        print("Generating comprehensive report...")
-        report = self.generate_comprehensive_report(results_df, comparisons)
-        
-        with open(self.output_dir / "bias_classification_report.txt", 'w') as f:
-            f.write(report)
+        create_all_visualizations(results_df, self.confusion_matrices, str(self.visualizations_dir))
         
         # Save all results
         results = {
-            'model_results': results_df.to_dict(),
-            'comparisons': {k: v.to_dict() for k, v in comparisons.items()},
+            'model_results': results_df.to_dict('index'),
+            'comparisons': {k: v.reset_index().to_dict('records') if isinstance(v.index, pd.MultiIndex) else v.to_dict() 
+                          for k, v in comparisons.items()},
             'evaluation_metadata': {
                 'num_models': len(self.available_models),
                 'model_list': list(self.available_models.keys()),
@@ -518,16 +359,5 @@ class ModelEvaluationRunner:
                 'total_time_minutes': (time.time() - start_time) / 60
             }
         }
-        
-        self.viz_suite.save_results_summary(results)
-        
-        print("\n" + "="*80)
-        print("EVALUATION COMPLETE!")
-        print("="*80)
-        print(f"Total time: {(time.time() - start_time) / 60:.2f} minutes")
-        print(f"Results saved to: {self.output_dir}")
-        print(f"Visualizations: {self.visualizations_dir}")
-        print(f"Report: {self.output_dir / 'bias_classification_report.txt'}")
-        print(f"Individual comparisons: {self.metrics_dir}")
-        
+                
         return results
