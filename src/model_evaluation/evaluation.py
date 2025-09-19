@@ -36,7 +36,7 @@ def main():
         results = runner.run_comprehensive_evaluation()
         
         print("\n" + "="*80)
-        print("EVALUATION SUMMARY")
+        print("EVALUATION COMPLETE!")
         print("="*80)
         
         metadata = results.get('evaluation_metadata', {})
