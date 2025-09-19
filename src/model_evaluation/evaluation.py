@@ -33,15 +33,10 @@ def main():
     # Initialize evaluation runner
     runner = ModelEvaluationRunner()
     
-    # If models not available
+    # If no models found
     if not runner.available_models:
-        print("\n❌ ERROR: Models not found!")
+        print("❌ ERROR: No Models found!")
         return
-    
-    # If models available
-    print(f"Found {len(runner.available_models)} models:")
-    for model_id in sorted(runner.available_models.keys()):
-        print(f"  - {model_id}")
     
     # Run comprehensive evaluation
     try:
