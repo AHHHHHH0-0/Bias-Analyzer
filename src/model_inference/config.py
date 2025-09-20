@@ -22,5 +22,4 @@ OUTPUT_CONFIG = {
 INFERENCE_CONFIG = {
     "max_length": 256,
     "batch_size": 16,
-    "device": "auto"
 }
