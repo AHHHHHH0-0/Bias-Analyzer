@@ -1,4 +1,4 @@
-# SELECT MODEL, ARCHITECTURE, AND TRAINING MODE
+# SELECT MODEL, ARCHITECTURE, AND TRAINING
 MODEL_CONFIG = {
     "model": "roberta",
     "layers": "2layer",
@@ -11,13 +11,6 @@ DATA_CONFIG = {
     "text_column": "full_text"
 }
 
-# Inference configuration
-INFERENCE_CONFIG = {
-    "max_length": 256,
-    "batch_size": 16,
-    "device": "auto"
-}
-
 # Output configuration
 OUTPUT_CONFIG = {
     "output_file": "src/model_inference/results/predictions.json",
@@ -25,3 +18,9 @@ OUTPUT_CONFIG = {
     "terminal_display_limit": 10
 }
 
+# Inference configuration
+INFERENCE_CONFIG = {
+    "max_length": 256,
+    "batch_size": 16,
+    "device": "auto"
+}
