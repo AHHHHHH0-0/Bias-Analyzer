@@ -45,8 +45,10 @@ def run_inference():
         prediction_engine = PredictionEngine(model, label_mapping, device)
         results = prediction_engine.predict_dataset(text_processor, df, INFERENCE_CONFIG["batch_size"])
         
-        # 4. Generate inference summary
-        print(f"\nGenerating summary...")
+        # 4. Generate results
+        print("\n" + "="*80)
+        print("✅ POLITICAL BIAS CLASSIFICATION RESULTS")
+        print("="*80)
         summary = prediction_engine.get_prediction_summary(results)
         model_info = {
             "model_name": MODEL_CONFIG["model"],
@@ -56,30 +58,16 @@ def run_inference():
             "parameters": model_loader.metadata["model_info"]["num_parameters"],
             "training_config": model_loader.get_training_config()
         }
+        total_time = time.time() - start_time
+
         output_formatter = OutputFormatter(OUTPUT_CONFIG)
-        formatted_output = output_formatter.process_output(
-            results=results,
-            summary=summary,
-            model_info=model_info
-        )
-        
-        # 5. Display completion info
-        end_time = time.time()
-        total_time = end_time - start_time
-        avg_time_per_article = total_time / len(results) if results else 0
-        
-        print(f"\n✅ INFERENCE COMPLETED SUCCESSFULLY!")
-        print(f"- Processed: {len(results)} articles")
-        print(f"- Total time: {total_time:.2f} seconds")
-        print(f"- Average time per article: {avg_time_per_article:.4f} seconds")
-        print(f"- Results saved to: {OUTPUT_CONFIG['output_file']}\n")
-        
+        output_formatter.process_output(results, summary, model_info, total_time)
+
     except Exception as e:
         print(f"\n❌ ERROR: {str(e)}")
 
 def main():
     """Entry point for the script."""
-    # Display configuration
     print("-" * 30)
     print("CONFIGURATION")
     print("-" * 30)
@@ -94,6 +82,12 @@ def main():
     
     # Run inference
     run_inference()
+
+    print()
+    print("="*80)
+    print()
+    print("✅ Done!")
+    print()
 
 if __name__ == "__main__":
     main()
