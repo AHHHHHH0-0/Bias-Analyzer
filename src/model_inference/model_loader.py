@@ -100,3 +100,11 @@ class ModelLoader:
         print(f"  - Labels: {self.metadata['dataset_info']['labels']}")
         
         return self.model, self.tokenizer, self.device
+    
+    def get_label_mapping(self):
+        """Get the label mapping from the metadata."""
+        return self.metadata["id2label"]
+    
+    def get_training_config(self):
+        """Get the training configuration used for this model."""
+        return self.metadata["training_config"]
