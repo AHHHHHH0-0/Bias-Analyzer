@@ -15,7 +15,7 @@ DATA_CONFIG = {
 OUTPUT_CONFIG = {
     "output_file": "src/model_inference/results/predictions.json",
     "show_in_terminal": True,
-    "terminal_display_limit": 10
+    "terminal_display_limit": 3
 }
 
 # Inference configuration
