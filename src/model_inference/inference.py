@@ -43,7 +43,7 @@ def run_inference():
         # 3. Run predictions
         print(f"\nRunning predictions...")
         prediction_engine = PredictionEngine(model, label_mapping, device)
-        results = prediction_engine.predict_dataset(text_processor, df, INFERENCE_CONFIG["batch_size"])
+        results = prediction_engine.predict_dataset(text_processor, df, DATA_CONFIG["text_column"],INFERENCE_CONFIG["batch_size"])
         
         # 4. Generate results
         print("\n" + "="*80)
@@ -64,7 +64,7 @@ def run_inference():
         output_formatter.process_output(results, summary, model_info, total_time)
 
     except Exception as e:
-        print(f"\n❌ ERROR: {str(e)}")
+        print(f"\n❌ ERROR: {e}")
 
 def main():
     """Entry point for the script."""
