@@ -1,6 +1,5 @@
 requests
 pandas
-datetime
 beautifulsoup4
 transformers
 torch
