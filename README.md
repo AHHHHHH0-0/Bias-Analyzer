@@ -47,52 +47,6 @@ This project implements a sophisticated news analysis system that can:
 | `distilbert` | `2layer` | `ft_part`   | Partially fine-tuned DistilBERT with MLP head    |
 | `distilbert` | `2layer` | `ft_full`   | Fully fine-tuned DistilBERT with MLP head        |
 
-## Quick Start
-
-### 1. Data Collection
-
-Create a `.env` file in the project root with your NewsAPI key:
-
-```bash
-NEWS_API_KEY=your_news_api_key_here
-```
-
-```bash
-python src/data/data.py
-```
-
-### 2. Model Training
-
-Train all 12 model configurations:
-
-```bash
-python src/model_training/train.py
-```
-
-### 3. Model Evaluation
-
-```bash
-python src/model_evaluation/evaluate.py
-```
-
-### 4. Run Inference
-
-Configure your model in `src/model_inference/config.py`:
-
-```python
-MODEL_CONFIG = {
-    "model": "roberta",        # Options: "roberta", "distilbert"
-    "layers": "2layer",        # Options: "1layer", "2layer"
-    "training": "ft_full"      # Options: "feat_extr", "ft_part", "ft_full"
-}
-```
-
-Run:
-
-```bash
-python src/model_inference/inference.py
-```
-
 ## Project Structure
 
 ```
@@ -143,6 +97,52 @@ News-Article-Sentiment-Bias-Analyzer/
 │
 ├── requirements.txt                  # Python dependencies
 └── README.md                         # This file
+```
+
+## Quick Start
+
+### 1. Data Collection
+
+Create a `.env` file in the project root with your NewsAPI key:
+
+```bash
+NEWS_API_KEY=your_news_api_key_here
+```
+
+```bash
+python src/data/data.py
+```
+
+### 2. Model Training
+
+Train all 12 model configurations:
+
+```bash
+python src/model_training/train.py
+```
+
+### 3. Model Evaluation
+
+```bash
+python src/model_evaluation/evaluate.py
+```
+
+### 4. Run Inference
+
+Configure your model in `src/model_inference/config.py`:
+
+```python
+MODEL_CONFIG = {
+    "model": "roberta",        # Options: "roberta", "distilbert"
+    "layers": "2layer",        # Options: "1layer", "2layer"
+    "training": "ft_full"      # Options: "feat_extr", "ft_part", "ft_full"
+}
+```
+
+Run:
+
+```bash
+python src/model_inference/inference.py
 ```
 
 ## Model Comparisons
