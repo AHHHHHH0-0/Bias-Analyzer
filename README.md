@@ -2,7 +2,7 @@
 
 The goal of this project is to explore different RoBERTa and DistilBERT architectures for NLP tasks, and use trained models for analyzing political bias in news articles.
 
-## Project Overview
+## Overview
 
 This project implements a sophisticated news analysis system that can:
 
